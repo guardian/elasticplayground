@@ -35,7 +35,7 @@ spec:
             failureThreshold: 2
             timeoutSeconds: 10
             periodSeconds: 5
-            initialDelaySeconds: 10
+            initialDelaySeconds: 20
           readinessProbe:
             httpGet:
               port: 9200

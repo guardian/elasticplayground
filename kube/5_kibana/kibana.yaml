@@ -19,7 +19,28 @@ spec:
           image: kibana:7.17.5
           ports:
             - containerPort: 5601
+          volumeMounts:
+            - mountPath: /usr/share/kibana/kibana.yml
+              name: kibana-config
+              subPath: kibana.yml
           resources:
             limits:
               cpu: 500m
               memory: 512Mi
+      volumes:
+        - name: kibana-config
+          configMap:
+            name: kibana-config
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: kibana-config
+data:
+  kibana.yml: |
+    server.host: "0.0.0.0"
+    server.shutdownTimeout: "5s"
+    elasticsearch.hosts: [ "http://elasticsearch:9200" ]
+    server.publicBaseUrl: https://elasticplayground.local/kibana
+    server.rewriteBasePath: false
+    server.basePath: /kibana

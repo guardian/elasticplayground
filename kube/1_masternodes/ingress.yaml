@@ -1,6 +1,8 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
   name: elasticplayground
 spec:
   rules:
@@ -13,18 +15,18 @@ spec:
                 port:
                  number: 9200
             pathType: Prefix
-            path: "/api"
+            path: "/api(/|$)(.*)"
           - backend:
               service:
                 name: cerebro
                 port:
                   number: 9000
             pathType: Prefix
-            path: "/cerebro"
+            path: "/cerebro(/|$)(.*)"
           - backend:
               service:
                 name: kibana
                 port:
                   number: 5601
             pathType: Prefix
-            path: "/kibana"
+            path: "/kibana(/|$)(.*)"
