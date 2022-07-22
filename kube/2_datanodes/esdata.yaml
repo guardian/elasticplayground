@@ -3,36 +3,35 @@ kind: StatefulSet
 metadata:
   labels:
     service: elasticsearch
-    tier: master
-  name: elasticsearch-master
+    tier: data
+  name: elasticsearch-data
 spec:
-  replicas: 3
+  replicas: 5
   selector:
     matchLabels:
       service: elasticsearch
-      tier: master
+      tier: data
   serviceName: elasticsearch
   template:
     metadata:
       labels:
         service: elasticsearch
-        tier: master
+        tier: data
         iteration: "1"
     spec:
       containers:
         - image: elasticsearch:7.17.5
-          name: esmaster
+          name: esdata
           ports:
             - containerPort: 9200
             - containerPort: 9300
           resources:
             limits:
-              memory: 512Mi
-              cpu: 1000m
+              memory: 1Gi
+              cpu: 2000m
           livenessProbe:
             tcpSocket:
               port: 9300
-            successThreshold: 1
             failureThreshold: 2
             timeoutSeconds: 10
             periodSeconds: 5
@@ -51,14 +50,14 @@ spec:
               name: esdata
             - mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
               subPath: elasticsearch.yml
-              name: esmaster-config
+              name: esdata-config
             - mountPath: /usr/share/elasticsearch/config/log4j2.properties
               subPath: log4j2.properties
-              name: esmaster-config
+              name: esdata-config
       volumes:
-        - name: esmaster-config
+        - name: esdata-config
           configMap:
-            name: esmaster-config
+            name: esdata-config
   volumeClaimTemplates:
     - metadata:
         name: esdata
@@ -67,4 +66,4 @@ spec:
           - ReadWriteOnce
         resources:
           requests:
-            storage: 100Mi
+            storage: 500Mi
