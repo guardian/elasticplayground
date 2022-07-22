@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: elasticplayground
+spec:
+  rules:
+    - host: elasticplayground.local
+      http:
+        paths:
+          - backend:
+              service:
+                name: elasticsearch
+                port:
+                 number: 9200
+            pathType: Prefix
+            path: "/api"

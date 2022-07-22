@@ -29,6 +29,23 @@ spec:
             limits:
               memory: 1Gi
               cpu: 1000m
+          livenessProbe:
+            tcpSocket:
+              port: 9300
+            successThreshold: 1
+            failureThreshold: 2
+            timeoutSeconds: 10
+            periodSeconds: 5
+            initialDelaySeconds: 10
+          readinessProbe:
+            httpGet:
+              port: 9200
+              path: /
+            successThreshold: 2
+            failureThreshold: 2
+            timeoutSeconds: 10
+            periodSeconds: 5
+            initialDelaySeconds: 30
           volumeMounts:
             - mountPath: /usr/share/elasticsearch/data
               name: esdata
