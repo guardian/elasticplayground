@@ -17,7 +17,6 @@ spec:
       containers:
         - name: cerebro
           image: andyg42/cerebro:0.9.4
-          imagePullPolicy: Always
           env:
             #needed to avoid a confusing error - https://github.com/lmenezes/cerebro/issues/441
             - name: CEREBRO_PORT

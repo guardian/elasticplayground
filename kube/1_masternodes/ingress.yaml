@@ -21,3 +21,10 @@ spec:
                   number: 9000
             pathType: Prefix
             path: "/cerebro"
+          - backend:
+              service:
+                name: kibana
+                port:
+                  number: 5601
+            pathType: Prefix
+            path: "/kibana"

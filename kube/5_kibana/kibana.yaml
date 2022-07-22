@@ -1,0 +1,25 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: kibana
+  labels:
+    service: kibana
+spec:
+  selector:
+    matchLabels:
+      service: kibana
+  template:
+    metadata:
+      labels:
+        service: kibana
+        iteration: "1"
+    spec:
+      containers:
+        - name: kibana
+          image: kibana:7.17.5
+          ports:
+            - containerPort: 5601
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi

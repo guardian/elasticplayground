@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    service: elasticsearch
+    tier: data
+  name: elasticsearch-ingest
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      service: elasticsearch
+      tier: ingest
+  serviceName: elasticsearch
+  template:
+    metadata:
+      labels:
+        service: elasticsearch
+        tier: ingest
+        iteration: "1"
+    spec:
+      containers:
+        - image: elasticsearch:7.17.5
+          name: esingest
+          ports:
+            - containerPort: 9200
+            - containerPort: 9300
+          resources:
+            limits:
+              memory: 1Gi
+              cpu: 1000m
+          livenessProbe:
+            tcpSocket:
+              port: 9300
+            failureThreshold: 2
+            timeoutSeconds: 10
+            periodSeconds: 5
+            initialDelaySeconds: 10
+          readinessProbe:
+            httpGet:
+              port: 9200
+              path: /
+            successThreshold: 2
+            failureThreshold: 2
+            timeoutSeconds: 10
+            periodSeconds: 5
+            initialDelaySeconds: 30
+          volumeMounts:
+            - mountPath: /usr/share/elasticsearch/data
+              name: esdata
+            - mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
+              subPath: elasticsearch.yml
+              name: esingest-config
+            - mountPath: /usr/share/elasticsearch/config/log4j2.properties
+              subPath: log4j2.properties
+              name: esingest-config
+      volumes:
+        - name: esingest-config
+          configMap:
+            name: esingest-config
+  volumeClaimTemplates:
+    - metadata:
+        name: esdata
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 500Mi
