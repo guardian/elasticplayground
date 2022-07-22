@@ -1,0 +1,38 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: cerebro
+  labels:
+    service: cerebro
+spec:
+  selector:
+    matchLabels:
+      service: cerebro
+  template:
+    metadata:
+      labels:
+        service: cerebro
+        iteration: "1"
+    spec:
+      containers:
+        - name: cerebro
+          image: andyg42/cerebro:0.9.4
+          imagePullPolicy: Always
+          env:
+            #needed to avoid a confusing error - https://github.com/lmenezes/cerebro/issues/441
+            - name: CEREBRO_PORT
+              value: "9000"
+          ports:
+            - containerPort: 9000
+          volumeMounts:
+            - mountPath: /opt/cerebro/conf/application.conf
+              name: cerebro-config
+              subPath: application.conf
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+      volumes:
+        - name: cerebro-config
+          configMap:
+            name: cerebro-config

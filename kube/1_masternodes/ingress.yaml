@@ -14,3 +14,10 @@ spec:
                  number: 9200
             pathType: Prefix
             path: "/api"
+          - backend:
+              service:
+                name: cerebro
+                port:
+                  number: 9000
+            pathType: Prefix
+            path: "/cerebro"

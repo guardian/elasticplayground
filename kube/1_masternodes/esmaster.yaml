@@ -6,7 +6,7 @@ metadata:
     tier: master
   name: elasticsearch-master
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       service: elasticsearch
@@ -27,8 +27,7 @@ spec:
             - containerPort: 9300
           resources:
             limits:
-              memory: 512Mi
-              cpu: 1000m
+              memory: 1024Mi
           livenessProbe:
             tcpSocket:
               port: 9300

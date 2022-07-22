@@ -28,7 +28,7 @@ spec:
           resources:
             limits:
               memory: 1Gi
-              cpu: 2000m
+              cpu: 1000m
           livenessProbe:
             tcpSocket:
               port: 9300
