@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    service: elasticsearch
+    tier: master
+  name: elasticsearch-master
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      service: elasticsearch
+      tier: master
+  serviceName: elasticsearch
+  template:
+    metadata:
+      labels:
+        service: elasticsearch
+        tier: master
+        iteration: "1"
+    spec:
+      containers:
+        - image: elasticsearch:7.17.5
+          name: esmaster
+          ports:
+            - containerPort: 9200
+            - containerPort: 9300
+          resources:
+            limits:
+              memory: 1Gi
+              cpu: 1000m
+          volumeMounts:
+            - mountPath: /usr/share/elasticsearch/data
+              name: esdata
+            - mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
+              subPath: elasticsearch.yml
+              name: esmaster-config
+            - mountPath: /usr/share/elasticsearch/config/log4j2.properties
+              subPath: log4j2.properties
+              name: esmaster-config
+      volumes:
+        - name: esmaster-config
+          configMap:
+            name: esmaster-config
+  volumeClaimTemplates:
+    - metadata:
+        name: esdata
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 100Mi

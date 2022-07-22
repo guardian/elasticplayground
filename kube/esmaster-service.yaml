@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    service: elasticsearch
+    tier: master
+  name: elasticsearch
+spec:
+  publishNotReadyAddresses: true
+  clusterIP: None #important for ES discovery
+  ports:
+    - name: '9200'
+      port: 9200
+      targetPort: 9200
+    - name: '9300'
+      port: 9300
+      targetPort: 9300
+  selector:
+    service: elasticsearch
+    tier: master
+
