@@ -54,10 +54,16 @@ spec:
             - mountPath: /usr/share/elasticsearch/config/log4j2.properties
               subPath: log4j2.properties
               name: esingest-config
+            - mountPath: /data/capi_snapshots
+              name: snapshots
+              readOnly: true
       volumes:
         - name: esingest-config
           configMap:
             name: esingest-config
+        - name: snapshots
+          hostPath:
+            path: /data/capi_snapshots
   volumeClaimTemplates:
     - metadata:
         name: esdata
