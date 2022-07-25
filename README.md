@@ -13,7 +13,8 @@ No, don't run away!  This is actually (fairly) easy.
 
 - Download and install `kubectl` - https://kubernetes.io/docs/tasks/tools/#kubectl
 - Download and install `minikube` - https://minikube.sigs.k8s.io/docs/start/
-- Run `minikube start --cpus=8 --memory=16G --driver={somedriver}`.  See below for what to use in place of `{somedriver}`.
+- Run `minikube start --cpus=8 --memory=16G --driver={somedriver} [--disk-size=100G]`.  See below for what to use in place of `{somedriver}`.
+The extra disk space is necessary on Apple Silicon; on Intel you can share folders onto the VM so you don't need it.
 - This takes a couple of minutes; it will create a VM in the hypervisor you specify and bootstrap a kubernetes cluster into it.
 - Wait for it to complete; Hey presto, you have a working Kubernetes.
 
@@ -23,11 +24,11 @@ minikube ssh "sudo sysctl -w vm.max_map_count=262144"
 ```
 This is a kernel parameter which is required for Elasticsearch to boot. If you don't do it, then none of the ES pods will
 start - they will fail with a 'bootstrap checks' error message.
-I've sometimes found that the setting doesn't "stick" - if your pods keep crashlooping when you bring up the stack again
+I've sometimes found that the setting doesn't "stick" - if your pods keep crash-looping when you bring up the stack again
 then try re-running this command.
 
 While Kubernetes is now working, we want to have a couple of addons present:
-- `minikube addons enable ingress`
+- `minikube addons enable ingress` (this can take ages to run, but is important)
 - `minikube addons enable metrics-server` (optional)
 - `minikube addons enable dashboard` (optional)
 
@@ -83,7 +84,9 @@ Minikube communicates with the VM by forwarding port 22, and this means that the
 
 Once the ingress controller is deployed (`minikube addons enable ingress`), you can set up a port-forward onto it to
 allow http or https access:
-1. Find the name of the ingress controller's pod: `kubectl get pods -n ingress-nginx`
+1. Change `kube/1_masternodes/ingress.yaml` line 9 to read `- host: localhost` instead of `- host: elasticplayground.local`
+2. If you already deployed it, then redeploy it: `kubectl apply -f 1_masternodes/ingress.yaml`
+3. Find the name of the ingress controller's pod: `kubectl get pods -n ingress-nginx`
 ```
 NAME                                        READY   STATUS      RESTARTS   AGE
 ingress-nginx-admission-create-98k4n        0/1     Completed   0          13h
@@ -92,12 +95,12 @@ ingress-nginx-controller-59b45fb494-hhns8   1/1     Running     1          13h
 ```
 In this case, the pod name is `ingress-nginx-controller-59b45fb494-hhns8` because that's the one that's Running (the others
 are setup jobs which have completed successfully).
-2. In a spare Terminal window (you'll need to keep the command running all the time you want access), forward either port
+4. In a spare Terminal window (you'll need to keep the command running all the time you want access), forward either port
 80 or 443 onto your localhost:
 ```bash
-kubectl -n ingress-nginx port-forward {podname} 80:8000  
+kubectl -n ingress-nginx port-forward {podname} 8000:80
 ```
-3. With this running, you should now be able to use `http://localhost:8000` in place of `http(s)://elasticplayground.local`
+5. With this running, you should now be able to use `http://localhost:8000` in place of `http(s)://elasticplayground.local`
 in the rest of this guide.
 
 ## Let's get deploying!
@@ -138,3 +141,46 @@ You should see the cluster in RED status with "3 unassigned shards".  This is un
 any data nodes.  If you go to the "nodes" tab, then you will see our two master nodes.
 
 ### Data nodes
+
+1. Keep your `watch -n1 kubectl get pods`
+2. `kubectl apply -f 3_datanodes`
+
+This will start up 5 data nodes, one at a time (see the `.spec.replicas` setting in `3_datanodes/esdata.yaml`) - your `watch`
+session should show them all starting up, one at a time.  If you're monitoring Cerebro in your browser you should see the nodes
+appearing one by one, and the cluster state gradually changing from "red" to "green" as we receive enough data nodes
+to hold the basic data
+
+The fairly long delays are to ensure that each node has a chance to properly start up and pass liveness checks before
+starting the next one.
+
+### Ingest nodes (optional)
+
+1. Keep your `watch -n1 kubectl get pods`
+2. `kubectl apply -f 4_ingestnodes`
+
+### Kibana
+
+1. Keep your `watch -n1 kubectl get pods`
+2. `kubectl apply -f 5_kibana`
+
+You should be getting used to this deployment style now! After it's downloaded and started up, you should be able to
+access Kibana at http://elasticplayground.local/kibana/ (**Note** the trailing slash).
+
+## Where's the data?
+
+So we now have a decently-sized Elasticsearch cluster with dedicated masters. But search is useless without data, isn't it?
+
+Of course, you can just create indexes and index some fresh data with the API - use `http://elasticsearch.local/api/` to
+contact the API (instead of the more usual `http://localhost:9200`).
+
+But if you want to get a lot of data on there, you'll want to obtain a snapshot of a live system and deploy that.
+
+**NOTE** qemu on Apple Silicon does not yet support sharing folders, and will report an error. See below for a workaround.
+
+1. Obtain your snapshot, and save it somewhere on your host.  In this example, it's at `${HOME}/capi_snapshots`
+2. 
+## Notes for future additions
+```
+ps ax | grep qemu
+rsync -av -e 'ssh -p 57116' capi_snapshots docker@localhost:/data --port 57116
+```
