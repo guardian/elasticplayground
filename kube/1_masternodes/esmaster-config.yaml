@@ -11,8 +11,8 @@ data:
     node.roles:
       - master
     network.host: 0.0.0.0
-    path.repo:
-      - /data
+#    path.repo:
+#      - /data
   log4j2.properties: |
     status=error
     ######## Server JSON ############################

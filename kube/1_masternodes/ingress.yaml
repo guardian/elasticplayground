@@ -2,12 +2,15 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.org/rewrites: "serviceName=elasticsearch rewrite=/;serviceName=cerebro rewrite=/;serviceName=kibana rewrite=/kibana"
+#    nginx.ingress.kubernetes.io/use-regex: "true"
+#    kubernetes.io/rewrite-target: /$2
   name: elasticplayground
 spec:
+  ingressClassName: nginx
   rules:
-    - host: elasticplayground.local
-      http:
+     - http:
         paths:
           - backend:
               service:
@@ -15,14 +18,16 @@ spec:
                 port:
                  number: 9200
             pathType: Prefix
-            path: "/api(/|$)(.*)"
+            #path: "/api(/|$)(.*)"
+            path: "/api"
           - backend:
               service:
                 name: cerebro
                 port:
                   number: 9000
             pathType: Prefix
-            path: "/cerebro(/|$)(.*)"
+            #path: "/cerebro(/|$)(.*)"
+            path: "/cerebro"
           - backend:
               service:
                 name: kibana
@@ -30,3 +35,4 @@ spec:
                   number: 5601
             pathType: Prefix
             path: "/()(kibana/?.*)"
+       host: elasticplayground.capi.gutools.co.uk

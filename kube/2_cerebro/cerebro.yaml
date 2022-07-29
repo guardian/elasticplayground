@@ -17,9 +17,9 @@ spec:
       containers:
         - name: cerebro
           # Uncomment this line for ARM
-          #image: andyg42/cerebro:0.9.4
+          image: andyg42/cerebro:0.9.4
           # Uncomment this line for x86
-          image: lmenezes/cerebro:0.9.4
+          #image: lmenezes/cerebro:0.9.4
           env:
             #needed to avoid a confusing error - https://github.com/lmenezes/cerebro/issues/441
             - name: CEREBRO_PORT
