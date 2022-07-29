@@ -41,7 +41,7 @@ export class ElasticPlaygroundCluster extends Construct {
         //this should come in a seperate submodule.
 
         Stack.of(this).availabilityZones.forEach(zoneId=> {
-            const ng = new eks.Nodegroup(this, `NodeGroup${zoneId}`, {
+            new eks.Nodegroup(this, `NodeGroup${zoneId}`, {
                 cluster: cluster,
                 subnets: {
                     onePerAz: true,
@@ -58,6 +58,10 @@ export class ElasticPlaygroundCluster extends Construct {
                 nodeRole: workerRole,
                 capacityType: CapacityType.ON_DEMAND,
             })
+        });
+
+        cluster.addHelmChart("ingress-controller", {
+
         })
     }
 }
