@@ -14,6 +14,17 @@ if [ "$EUID" != "0" ]; then
   exit 1
 fi
 
+echo ----------------------------------
+echo Installing on-reboot setup
+echo ----------------------------------
+#This small script ensures that the persistent volumes path and the VM map space required for ES are both setup
+#when the node reboots.
+install -m 640 elasticplayground-startup.service /etc/systemd/system
+systemctl daemon-reload
+#Run it now so that we get set up
+systemctl start elasticplayground-startup
+systemctl enable elasticplayground-startup
+
 ### Standard Docker installation instructions taken from https://docs.docker.com/engine/install/ubuntu/
 echo ----------------------------------
 echo Installing Docker
@@ -36,8 +47,6 @@ echo ----------------------------------
 echo ----------------------------------
 echo Installing Minikube and kubectl
 echo ----------------------------------
-mkdir -p /tmp/hostpath-provisioner
-ln -s /tmp/hostpath-provisioner /persistent-data
 
 echo Architecture is $ARCH. If this is not supported by Minikube, you\'ll get a download error right about now.
 curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-$ARCH

@@ -1,0 +1,14 @@
+[Unit]
+Description=Startup for Elasticplayground
+After=network.target
+Requires=network.target
+
+[Service]
+Type=oneshot
+#sysctl -w fs.protected_regular=0 - see https://github.com/kubernetes/minikube/issues/6391
+#sysctl -w vm.max_map_count=262144 - required for ES to start up
+#bind-mount is required because minikube host provisioner does not follow symlinks
+ExecStart=/bin/bash -c 'sysctl -w fs.protected_regular=0; sysctl -w vm.max_map_count=262144; mkdir -p /tmp/hostpath-provisioner; mount -o bind /persistent-data /tmp/hostpath-provisioner'
+
+[Install]
+WantedBy=multi-user.target
