@@ -1,0 +1,21 @@
+--- /etc/kubernetes/manifests/kube-apiserver.yaml	2022-08-19 13:59:03.452962483 +0000
++++ /etc/kubernetes/manifests/kube-apiserver.yaml	2022-08-19 13:54:50.543231361 +0000
+@@ -13,6 +13,7 @@
+   containers:
+   - command:
+     - kube-apiserver
++    - --cloud-provider=aws
+     - --advertise-address=10.248.124.205
+     - --allow-privileged=true
+     - --authorization-mode=Node,RBAC
+--- /etc/kubernetes/manifests/kube-controller-manager.yaml	2022-08-19 13:59:03.452962483 +0000
++++ /etc/kubernetes/manifests/kube-controller-manager.yaml	2022-08-19 13:54:50.543231361 +0000
+@@ -12,6 +12,8 @@
+   - command:
+     - kube-controller-manager
+     - --allocate-node-cidrs=true
++    - --cloud-provider=aws
++    - --configure-cloud-routes=false
+     - --authentication-kubeconfig=/etc/kubernetes/controller-manager.conf
+     - --authorization-kubeconfig=/etc/kubernetes/controller-manager.conf
+     - --bind-address=127.0.0.1
