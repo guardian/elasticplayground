@@ -36,6 +36,9 @@ echo ----------------------------------
 echo ----------------------------------
 echo Installing Minikube and kubectl
 echo ----------------------------------
+mkdir -p /tmp/hostpath-provisioner
+ln -s /tmp/hostpath-provisioner /persistent-data
+
 echo Architecture is $ARCH. If this is not supported by Minikube, you\'ll get a download error right about now.
 curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-$ARCH
 install minikube-linux-$ARCH /usr/local/bin/minikube
