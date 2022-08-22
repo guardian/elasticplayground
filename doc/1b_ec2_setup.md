@@ -11,19 +11,20 @@ instances on here and they are notoriously memory-hungry especially when they ha
 3. Create a new instance role, we'll put some policies on it later.
 4. Add a hefty amount of storage. Everything from every instance will be going onto the root EBS volume (in a default 
 configuration, anyway).  Say 512Gb or so, depending on how large a dataset you want to import.
-5. Create a new Security Group.  We'll need SSH to your current address, and 443 to your current address as well.
+5. You'll want a public-facing network placement, or at least something that you can route to ports 22 and 443 from.
+6. Create a new Security Group.  We'll need SSH to your current address, and 443 to your current address as well.
 SSM won't work unless AWS can access the instance's 443 port but I got around this by using SSH instead. Future versions
 of this guide will improve on these recommendations....
-6. If you're relying on SSH make sure that you create a keypair and download the public key.  This is not recommended
+7. If you're relying on SSH make sure that you create a keypair and download the public key.  This is not recommended
 in production but for a small test it's OK. It's also useful for debugging any issues with SSM connectivity.
-7. Launch it
-8. Go to the IAM console and locate/edit the Role that you created in step 3.
-9. Add the 'AmazonSSMManagedInstanceCore' AWS managed Role
-10. (Optional) Create a new policy from the file [aws/minikube-node-policy.json](../aws/minikube-node-policy.json) and add
+8. Launch it
+9. Go to the IAM console and locate/edit the Role that you created in step 3.
+10. Add the 'AmazonSSMManagedInstanceCore' AWS managed Role
+11. (Optional) Create a new policy from the file [aws/minikube-node-policy.json](../aws/minikube-node-policy.json) and add
 it onto the role as well.  This is not actually needed to make the base installation work, but if you want to experiment
 with getting more AWS features onto the cluster you'll want it.
-11. By now the instance should have booted.  SSH or SSM into it, and we are ready to start.....
-12. Run `apt-get -y update && apt-get -y upgrade`. You know you should.
+12. By now the instance should have booted.  SSH or SSM into it, and we are ready to start.....
+13. Run `apt-get -y update && apt-get -y upgrade`. You know you should.
 
 ## Install minikube
 
@@ -58,6 +59,18 @@ the `ubuntu` user to allow it to use `kubectl`.  Test it out by running `kubectl
 you should see one node, whose name is the same as the instance's hostname.
 
 ## Prepare for deployment
+
+In order to access the setup in your browser, you'll need a hostname. That's because the "ingress controller" that
+grants you access to cloud resources uses the `hostname` parameter of an HTTP request to determine what to route you
+into.
+
+2. Edit `/etc/hosts` on your local machine (root required!) and add the following line:
+```
+x.y.z.q         elasticplayground.local
+```
+where `x.y.z.q` is the _public-facing_ (or at least routable!) IP address of your EC2 instance.  OK so it's not really
+"local", if you want you can change that name, but then you will also need to change the ingress controller etc. too so
+there's really not much point in doing that.
 
 The last thing you should do is to visit the setup for the ES master and data nodes (../kube/1_masternodes/esdata.yaml, 
 ../kube/3_datanodes/esdata.yaml) and locate the `limits` section.  This is deliberately set very low, to allow it to
